@@ -96,6 +96,8 @@ bashargs_option() {
 		bashargs_error "expected --signals after --var for bashargs_option $name"
 	fi
 
+	shift
+
 	local signals=()
 	while (( $# )); do
 		signals=("${signals[@]}" "$1")
@@ -203,16 +205,17 @@ bashargs_parse() {
 }
 
 # utility function for you
-bashargs_truthy() {
-	[[ "$1" = "true" ]] ||
-	[[ "$1" = "on" ]] ||
-	[[ "$1" = "enabled" ]] ||
-	[[ "$1" = "yes" ]] ||
-	[[ "$1" = "1" ]]
+# case insensitive match for true, on, enabled, yes, y or 1. 
+bashargs_is_truthy() {
+	[[ "$1" =~ ^\ *([tT][rR][uU][eE]|[oO][nN]|[eE][nN][aA][bB][lL][eE][dD]|[yY](|[eE][sS])|1)\ *$ ]]
 }
 
 bashargs_is_set() {
 	[[ -v "$1" ]]
+}
+
+bashargs_is_enabled() {
+	( bashargs_is_set "$1" && [[ -z "\$$1" ]] ) || bashargs_is_truthy "\$$1"
 }
 
 bashargs_is_empty() {
